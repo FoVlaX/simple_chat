@@ -31,7 +31,7 @@ void sender(SOCKET clientSocket) {
 class Client {
 public:
 	Client() {
-		if (WSAStartup(MAKEWORD(2, 2), &wData) == 0){ //создаем словарь
+		if (WSAStartup(MAKEWORD(2, 2), &wData) == 0){ //СЃРѕР·РґР°РµРј СЃР»РѕРІР°СЂСЊ
 		
 			printf("WSA Startup succes\n");
 		}

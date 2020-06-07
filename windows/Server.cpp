@@ -81,14 +81,14 @@ public:
 private:
 
 	void handle();
-	map<string, Client*> clients; //клиенты онлайн
+	map<string, Client*> clients; //РєР»РёРµРЅС‚С‹ РѕРЅР»Р°Р№РЅ
 
-	map<string, string> data; //словарь логин - пароль
+	map<string, string> data; //СЃР»РѕРІР°СЂСЊ Р»РѕРіРёРЅ - РїР°СЂРѕР»СЊ
 
 	WSAData wData;
-	SOCKET listenSocket; //сокет сервера
-	SOCKADDR_IN addr; //адрес сервера
-	unsigned short port; //порт
+	SOCKET listenSocket; //СЃРѕРєРµС‚ СЃРµСЂРІРµСЂР°
+	SOCKADDR_IN addr; //Р°РґСЂРµСЃ СЃРµСЂРІРµСЂР°
+	unsigned short port; //РїРѕСЂС‚
 
 };
 
@@ -99,7 +99,7 @@ private:
 
 	Server::Server(unsigned short port) {
 		this->port = port;
-		if (WSAStartup(MAKEWORD(2, 2), &wData) == 0) //создаем словарь
+		if (WSAStartup(MAKEWORD(2, 2), &wData) == 0) //СЃРѕР·РґР°РµРј СЃР»РѕРІР°СЂСЊ
 		{
 			printf("WSA Startup succes\n");
 		}
@@ -108,12 +108,12 @@ private:
 		addr.sin_addr.S_un.S_addr = INADDR_ANY;
 		addr.sin_port = htons(port);
 		addr.sin_family = AF_INET;
-		listenSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP); //создаем сокет сервера 
+		listenSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP); //СЃРѕР·РґР°РµРј СЃРѕРєРµС‚ СЃРµСЂРІРµСЂР° 
 		if (listenSocket == SOCKET_ERROR) {
 			printf("Socket not created\n");
 		}
 		
-		loadData(); //Загружаем данные о логинах и паролях
+		loadData(); //В«Р°РіСЂСѓР¶Р°РµРј РґР°РЅРЅС‹Рµ Рѕ Р»РѕРіРёРЅР°С… Рё РїР°СЂРѕР»В¤С…
 	}
 	Server::~Server() {
 		WSACleanup();
@@ -122,7 +122,7 @@ private:
 
 	void Server::startServer() {
 
-		if (bind(listenSocket, (struct sockaddr*) & addr, sizeof(addr)) != SOCKET_ERROR) { //связываем сокет с адресом
+		if (bind(listenSocket, (struct sockaddr*) & addr, sizeof(addr)) != SOCKET_ERROR) { //СЃРІВ¤Р·С‹РІР°РµРј СЃРѕРєРµС‚ СЃ Р°РґСЂРµСЃРѕРј
 			printf("Socket success binded\n");
 		}
 		else {
@@ -130,7 +130,7 @@ private:
 			return;
 		}
 
-		if (listen(listenSocket, SOMAXCONN) != SOCKET_ERROR) { //начинаем "слушать" порт
+		if (listen(listenSocket, SOMAXCONN) != SOCKET_ERROR) { //РЅР°С‡РёРЅР°РµРј "СЃР»СѓС€Р°С‚СЊ" РїРѕСЂС‚
 			printf("Start listenin at port %u\n", ntohs(addr.sin_port));
 		}
 		else {
@@ -138,11 +138,11 @@ private:
 			return;
 		}
 		
-		handle(); //ждем поключения клиентов
+		handle(); //Р¶РґРµРј РїРѕРєР»СЋС‡РµРЅРёВ¤ РєР»РёРµРЅС‚РѕРІ
 
 	}
 
-	void Server::sendMessageAll(string msg, string name) { //отправить всем сообщение
+	void Server::sendMessageAll(string msg, string name) { //РѕС‚РїСЂР°РІРёС‚СЊ РІСЃРµРј СЃРѕРѕР±С‰РµРЅРёРµ
 		map<string, Client*>::iterator it = clients.begin();
 		for ( ;it != clients.end(); it++) {
 			if ((*it).first != name) {
@@ -156,7 +156,7 @@ private:
 		}
 	}
 	
-	bool Server::sendPrivateMsg(string msg, string toName, string myName) { //отправиtь приватное сообщение
+	bool Server::sendPrivateMsg(string msg, string toName, string myName) { //РѕС‚РїСЂР°РІРёtСЊ РїСЂРёРІР°С‚РЅРѕРµ СЃРѕРѕР±С‰РµРЅРёРµ
 		
 		if (toName != myName) {
 			if (clients.find(toName) != clients.end()) {
@@ -173,18 +173,18 @@ private:
 		
 	}
 
-	void Server::addClient(string name, Client *client) {//добавить клиента который сейчас онлайн
+	void Server::addClient(string name, Client *client) {//РґРѕР±Р°РІРёС‚СЊ РєР»РёРµРЅС‚Р° РєРѕС‚РѕСЂС‹Р№ СЃРµР№С‡Р°СЃ РѕРЅР»Р°Р№РЅ
 		clients[name] = client;
 	}
 
-	void Server::removeClient(string name) { //удалить клиента при его отключении
+	void Server::removeClient(string name) { //СѓРґР°Р»РёС‚СЊ РєР»РёРµРЅС‚Р° РїСЂРё РµРіРѕ РѕС‚РєР»СЋС‡РµРЅРёРё
 		if (clients.find(name) != clients.end()) {
 			clients.erase(name);
 			sendMessageAll(name + " disconnected", "Server");
 		}
 	}
 
-	void Server::loadData() { //загрузить данные о парялях и логинах из файла
+	void Server::loadData() { //Р·Р°РіСЂСѓР·РёС‚СЊ РґР°РЅРЅС‹Рµ Рѕ РїР°СЂВ¤Р»В¤С… Рё Р»РѕРіРёРЅР°С… РёР· С„Р°Р№Р»Р°
 		ifstream in("data.dat");
 		int count;
 		in >> count;
@@ -197,7 +197,7 @@ private:
 		in.close();
 	}
 
-	void Server::saveData() { //сохранить данные
+	void Server::saveData() { //СЃРѕС…СЂР°РЅРёС‚СЊ РґР°РЅРЅС‹Рµ
 		ofstream out("data.dat");
 		int count = data.size();
 		out << count << endl;
@@ -208,7 +208,7 @@ private:
 		out.close();
 	}
 
-	bool Server::addUser(string login, string password) { //добавить нового юзера
+	bool Server::addUser(string login, string password) { //РґРѕР±Р°РІРёС‚СЊ РЅРѕРІРѕРіРѕ СЋР·РµСЂР°
 		if (data.find(login) == data.end()) {
 			data[login] = password;
 			saveData();
@@ -219,14 +219,14 @@ private:
 		}
 	}
 
-	int Server::checkData(string login, string password) { //проверить совпадения логина и пароля по базе
+	int Server::checkData(string login, string password) { //РїСЂРѕРІРµСЂРёС‚СЊ СЃРѕРІРїР°РґРµРЅРёВ¤ Р»РѕРіРёРЅР° Рё РїР°СЂРѕР»В¤ РїРѕ Р±Р°Р·Рµ
 
 		if (data.find(login) == data.end()) {
 			return -1;
 		}
 		else {
 			if (data[login] == password) {
-				if (clients.find(login) == clients.end()) { //проверяем  есть ли юзер уже на сервере
+				if (clients.find(login) == clients.end()) { //РїСЂРѕРІРµСЂВ¤РµРј  РµСЃС‚СЊ Р»Рё СЋР·РµСЂ СѓР¶Рµ РЅР° СЃРµСЂРІРµСЂРµ
 					return 0;
 				}
 				else {
@@ -266,10 +266,10 @@ private:
 	void Server::handle() {
 		while (true)
 		{
-			SOCKET clientSocket; //сокет кллиента
-			SOCKADDR_IN addr_c; //адрес клиента
+			SOCKET clientSocket; //СЃРѕРєРµС‚ РєР»Р»РёРµРЅС‚Р°
+			SOCKADDR_IN addr_c; //Р°РґСЂРµСЃ РєР»РёРµРЅС‚Р°
 			int addrlen = sizeof(addr_c);
-			if ((clientSocket = accept(listenSocket, (struct sockaddr*) &addr_c, &addrlen)) != 0) { //ждем когда клиент подключиться, сокеты в блокирующем режиме
+			if ((clientSocket = accept(listenSocket, (struct sockaddr*) &addr_c, &addrlen)) != 0) { //Р¶РґРµРј РєРѕРіРґР° РєР»РёРµРЅС‚ РїРѕРґРєР»СЋС‡РёС‚СЊСЃВ¤, СЃРѕРєРµС‚С‹ РІ Р±Р»РѕРєРёСЂСѓСЋС‰РµРј СЂРµР¶РёРјРµ
 				thread thread(clientThread,this,clientSocket);
 				thread.detach();
 			}
@@ -308,7 +308,7 @@ private:
 					size_t second = msg.find(" ", first + 1);
 					string login;
 					string password;
-					if (second != string::npos && second != msg.length() - 1 && second - first > 1) { //проверяем соответствие формату
+					if (second != string::npos && second != msg.length() - 1 && second - first > 1) { //РїСЂРѕРІРµСЂВ¤РµРј СЃРѕРѕС‚РІРµС‚СЃС‚РІРёРµ С„РѕСЂРјР°С‚Сѓ
 
 						login = msg.substr(first + 1, second - first - 1);
 						password = msg.substr(second + 1, msg.length() - second - 1);
@@ -336,7 +336,7 @@ private:
 					size_t second = msg.find(" ", first + 1);
 					string login;
 					string password;
-					if (second != string::npos && second != msg.length() - 1 && second - first > 1) {//проверяем соответствие формату
+					if (second != string::npos && second != msg.length() - 1 && second - first > 1) {//РїСЂРѕРІРµСЂВ¤РµРј СЃРѕРѕС‚РІРµС‚СЃС‚РІРёРµ С„РѕСЂРјР°С‚Сѓ
 
 						login = msg.substr(first + 1, second - first - 1);
 						password = msg.substr(second + 1, msg.length() - second-1);
@@ -373,7 +373,7 @@ private:
 					string toName;
 					string message;
 
-					if (second != string::npos && second != msg.length() - 1 && second - first > 1) {//проверяем соответствие формату
+					if (second != string::npos && second != msg.length() - 1 && second - first > 1) {//РїСЂРѕРІРµСЂВ¤РµРј СЃРѕРѕС‚РІРµС‚СЃС‚РІРёРµ С„РѕСЂРјР°С‚Сѓ
 
 						toName = msg.substr(first + 1, second - first - 1);
 						message = msg.substr(second + 1, msg.length() - second - 1);
